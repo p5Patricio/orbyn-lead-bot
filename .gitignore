@@ -1,0 +1,6 @@
+venv/
+.env
+__pycache__/
+google_creds.json
+*.pyc
+.pytest_cache/

@@ -1,0 +1,5 @@
+python-telegram-bot
+gspread
+groq
+python-dotenv
+pydantic-settings
