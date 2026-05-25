@@ -10,6 +10,9 @@ from config import get_settings
 
 logger = logging.getLogger(__name__)
 MODEL_NAME = "llama-3.1-8b-instant"
+DEFAULT_REASON = (
+    "Razón no especificada por el modelo debido a una respuesta inesperada."
+)
 
 
 class LeadAnalysis(TypedDict):
@@ -70,14 +73,14 @@ def _parse_analysis_response(content: str | None) -> LeadAnalysis:
 
     result: dict[str, Any] = json.loads(content)
     qualified = result.get("qualified")
-    reason = result.get("reason")
+    reason_value = result.get("reason", DEFAULT_REASON)
 
     if not isinstance(qualified, bool):
         raise ValueError('The model response is missing a boolean "qualified" value.')
-    if not isinstance(reason, str) or not reason.strip():
-        raise ValueError('The model response is missing a non-empty "reason" value.')
+    if not isinstance(reason_value, str) or not reason_value.strip():
+        reason_value = DEFAULT_REASON
 
     return {
         "qualified": qualified,
-        "reason": reason.strip(),
+        "reason": reason_value.strip(),
     }
