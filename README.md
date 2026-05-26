@@ -1,3 +1,12 @@
+---
+title: Orbyn Lead Bot
+emoji: 🚀
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+app_port: 7860
+---
 # Orbyn Lead Qualification Bot
 
 Orbyn Lead Qualification Bot is a Python Telegram bot that qualifies inbound B2B leads with Groq and stores every decision in Google Sheets.
