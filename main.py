@@ -2,6 +2,8 @@
 
 import asyncio
 import logging
+import threading
+from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 from telegram import Message, Update
 from telegram.ext import (
@@ -32,6 +34,33 @@ logging.basicConfig(
     level=logging.INFO,
 )
 logger = logging.getLogger(__name__)
+HEALTH_CHECK_HOST = "0.0.0.0"
+HEALTH_CHECK_PORT = 7860
+HEALTH_CHECK_RESPONSE = b"Bot is running"
+
+
+class HealthCheckHandler(SimpleHTTPRequestHandler):
+    """Return a simple success response for container health checks."""
+
+    def do_GET(self) -> None:
+        """Return a 200 OK response for any GET request."""
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.send_header("Content-Length", str(len(HEALTH_CHECK_RESPONSE)))
+        self.end_headers()
+        self.wfile.write(HEALTH_CHECK_RESPONSE)
+
+    def log_message(self, format: str, *args: object) -> None:
+        """Send HTTP server access logs through the application logger."""
+        logger.info("Health check request: " + format, *args)
+
+
+def run_health_check_server() -> None:
+    """Start the HTTP health check server required by Hugging Face Spaces."""
+    server_address = (HEALTH_CHECK_HOST, HEALTH_CHECK_PORT)
+    http_server = HTTPServer(server_address, HealthCheckHandler)
+    logger.info("Starting health check server on port %s.", HEALTH_CHECK_PORT)
+    http_server.serve_forever()
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -77,6 +106,8 @@ async def _send_result(
 def main() -> None:
     """Start the Telegram bot in polling mode."""
     settings = get_settings()
+    threading.Thread(target=run_health_check_server, daemon=True).start()
+
     application = Application.builder().token(settings.telegram_token).build()
 
     application.add_handler(CommandHandler("start", start))
