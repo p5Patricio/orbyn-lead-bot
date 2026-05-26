@@ -9,7 +9,7 @@ from groq import Groq
 from config import get_settings
 
 logger = logging.getLogger(__name__)
-MODEL_NAME = "llama-3.1-8b-instant"
+MODEL_NAME = "llama-3.3-70b-versatile"
 DEFAULT_REASON = (
     "Razón no especificada por el modelo debido a una respuesta inesperada."
 )
@@ -28,7 +28,7 @@ You are an expert B2B lead qualification analyst.
 Ideal Customer Profile:
 - Service or consulting company.
 - Has 5 or more employees.
-- Located in Spain or LATAM.
+- Region: Spain or Latin America (IMPORTANT: You must logically map specific countries like Mexico, Colombia, Argentina, Peru, etc., to Latin America).
 - Has a clear need for automation, AI, efficiency, or process optimization.
 
 Qualification rule:
@@ -42,6 +42,8 @@ Output requirements:
 - The JSON object must contain exactly two keys: "qualified" and "reason".
 - "qualified" must be a boolean.
 - "reason" must be a 2-3 line explanation of the decision written strictly in Spanish.
+
+CRITICAL: You MUST output ONLY valid JSON. Your output must strictly match this exact structure with these exact keys: {"qualified": boolean, "reason": "string in Spanish"}.
 """.strip()
 
 
@@ -66,12 +68,13 @@ def analyze_lead(lead_text: str) -> LeadAnalysis:
     return _parse_analysis_response(response.choices[0].message.content)
 
 
-def _parse_analysis_response(content: str | None) -> LeadAnalysis:
+def _parse_analysis_response(raw_content: str | None) -> LeadAnalysis:
     """Parse and validate the JSON response from the LLM."""
-    if not content:
+    if not raw_content:
         raise ValueError("The model returned an empty response.")
 
-    result: dict[str, Any] = json.loads(content)
+    logging.info(f"Raw LLM response: {raw_content}")
+    result: dict[str, Any] = json.loads(raw_content)
     qualified = result.get("qualified")
     reason_value = result.get("reason", DEFAULT_REASON)
 
