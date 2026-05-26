@@ -34,7 +34,7 @@ The bot checks whether each lead matches this ICP:
 - Python 3.11 or newer
 - Telegram bot token from BotFather
 - Groq API key
-- Google Cloud service account JSON file
+- Google Cloud service account JSON credentials
 - A Google Sheet shared with the service account email
 
 ## Setup
@@ -58,15 +58,15 @@ The bot checks whether each lead matches this ICP:
    TELEGRAM_TOKEN=your_telegram_bot_token
    GROQ_API_KEY=your_groq_api_key
    GOOGLE_SHEET_ID=your_google_sheet_id
+   GOOGLE_CREDS_JSON={"type":"service_account","project_id":"..."}
    ```
 
-4. Place your Google service account credentials in the project root:
+4. Set `GOOGLE_CREDS_JSON` to the raw JSON string from the Google service
+   account credentials file. In cloud environments, add the full JSON object as
+   an environment variable or secret.
 
-   ```text
-   google_creds.json
-   ```
-
-5. Share the target Google Sheet with the service account email from `google_creds.json`.
+5. Share the target Google Sheet with the service account email from the
+   credentials JSON.
 
 ## Running the bot
 

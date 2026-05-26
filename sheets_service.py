@@ -1,5 +1,6 @@
 """Google Sheets service for storing lead qualification records."""
 
+import json
 import logging
 from datetime import datetime, timezone
 
@@ -8,7 +9,6 @@ import gspread
 from config import get_settings
 
 logger = logging.getLogger(__name__)
-CREDENTIALS_FILE = "google_creds.json"
 
 
 def log_lead(raw_data: str, decision: str, reason: str) -> None:
@@ -19,7 +19,8 @@ def log_lead(raw_data: str, decision: str, reason: str) -> None:
 
     try:
         logger.info("Connecting to Google Sheets.")
-        client = gspread.service_account(filename=CREDENTIALS_FILE)
+        credentials = json.loads(settings.GOOGLE_CREDS_JSON)
+        client = gspread.service_account_from_dict(credentials)
         sheet = client.open_by_key(settings.google_sheet_id).sheet1
         sheet.append_row(row)
         logger.info("Lead qualification record appended to Google Sheets.")
