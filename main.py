@@ -104,9 +104,8 @@ async def _send_result(
 
 
 def main() -> None:
-    """Start the Telegram bot in polling mode."""
+    """Start the Telegram bot in webhook or polling mode."""
     settings = get_settings()
-    threading.Thread(target=run_health_check_server, daemon=True).start()
 
     application = Application.builder().token(settings.telegram_token).build()
 
@@ -115,8 +114,18 @@ def main() -> None:
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
     )
 
-    logger.info("Starting Telegram polling.")
-    application.run_polling()
+    if settings.webhook_url:
+        logger.info("Starting in webhook mode on port %s.", HEALTH_CHECK_PORT)
+        application.run_webhook(
+            listen=HEALTH_CHECK_HOST,
+            port=HEALTH_CHECK_PORT,
+            url_path="webhook",
+            webhook_url=f"{settings.webhook_url}/webhook",
+        )
+    else:
+        threading.Thread(target=run_health_check_server, daemon=True).start()
+        logger.info("Starting Telegram polling.")
+        application.run_polling()
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     groq_api_key: str
     google_sheet_id: str
     GOOGLE_CREDS_JSON: str = ""
+    webhook_url: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",
